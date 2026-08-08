@@ -1,0 +1,15 @@
+# Pracovné a zdrojové súbory — nepatria do zverejneného webu.
+# Fotky použité na webe sú v priečinku obrazky/ pod čitateľnými názvami.
+
+# pôvodné fotky (duplikáty toho, čo je v obrazky/)
+72177671_*.jpg
+72636646_*.jpg
+zebranightrun-*.jpg
+
+# podklady a poznámky
+o stranke.txt
+problem.jpg
+
+# systémové
+Thumbs.db
+.DS_Store
