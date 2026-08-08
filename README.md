@@ -38,6 +38,19 @@ Súčasný klip má 8,04 s, ale skutočná slučka v ňom trvá len ~4,96 s — 
 
 Ak sa video nenačíta, zobrazí sa záložná fotka `obrazky/bezci-noc.jpg` a stránka ostane plne čitateľná.
 
+## Kde web beží
+
+| kde | adresa |
+|---|---|
+| Vercel | https://modry-ocean.vercel.app |
+| GitHub Pages | https://csrom.github.io/modry-ocean/ |
+
+Obe sa nasadzujú samy pri každom pushi do vetvy `main`.
+
+## Doména
+
+Postup, ako nasmerovať vlastnú doménu z WebGlobe na Vercel, je v [DOMENA.md](DOMENA.md).
+
 ## Kontakt
 
 Tibor Lettrich — tibor.lettrich@gmail.com
