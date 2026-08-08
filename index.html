@@ -15,6 +15,9 @@
   <meta property="og:image" content="obrazky/bezci-noc.jpg" />
   <meta name="twitter:card" content="summary_large_image" />
 
+  <!-- nahradny obrazok hero sekcie nacitat co najskor, aby sa stranka vykreslila hned -->
+  <link rel="preload" as="image" href="obrazky/hero-poster.jpg" />
+
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
@@ -101,6 +104,15 @@
     // Video pozadia hero sekcie. Ak raz prestane byt dostupne, staci vymenit tuto jednu URL.
     const VIDEO_SRC =
       'https://d8j0ntlcm91z4.cloudfront.net/user_38xzZboKViGWJOttwIXH07lWA1P/hf_20260622_204221_5339e40b-e73d-4ab0-9c65-79c18c66fd50.mp4';
+
+    // Nahradny obrazok, kym sa video stiahne (a natrvalo, keby CDN vypadlo).
+    // Je to PRVY SNIMOK toho isteho videa, vyexportovany do JPEG (56 kB), takze
+    // ked video nabehne, obraz sa nezmeni a nie je co prebliknut. Predtym tu bola
+    // fotka z behu a pri kazdom nacitani stranky kratko preblikla, kym sa stiahlo
+    // 7,6 MB videa.
+    //
+    // Pri vymene videa treba znovu vyexportovat jeho prvy snimok, inak sa preblik vrati.
+    const VIDEO_POSTER = 'obrazky/hero-poster.jpg';
 
     // Subor ma 8,04 s, ale skutocna slucka v nom trva len ~4,96 s — na tom mieste je
     // do videa zapeceny tvrdy strih spat na zaciatok (merane: rozdiel medzi susednymi
@@ -559,7 +571,7 @@
         <section id="domov" className="relative h-screen w-full overflow-hidden bg-black">
           <LoopingVideo
             src={VIDEO_SRC}
-            poster="obrazky/bezci-noc.jpg"
+            poster={VIDEO_POSTER}
             objectPosition="70% center"
             loopEnd={VIDEO_LOOP_END}
             rate={VIDEO_RATE}
