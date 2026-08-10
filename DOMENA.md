@@ -1,82 +1,116 @@
-# Nasmerovanie vlastnej domény z WebGlobe na Vercel
+# Doména modryocean.sk
 
-Web beží na dvoch miestach, obe z tohto repozitára:
+## Aktuálny stav — nastavené a funkčné
 
-| kde | adresa |
+Doména je zaregistrovaná na **WebGlobe** a nasmerovaná na **Vercel**. **Netreba na nej už nič meniť.**
+
+| adresa | čo robí |
 |---|---|
-| Vercel | https://modry-ocean.vercel.app |
-| GitHub Pages | https://csrom.github.io/modry-ocean/ |
+| **https://www.modryocean.sk** | ostrá adresa webu |
+| https://modryocean.sk | presmeruje (308) na tvar s `www` |
+| https://modry-ocean.vercel.app | pôvodná adresa od Vercelu, funguje ďalej |
+| https://csrom.github.io/modry-ocean/ | GitHub Pages, záloha |
 
-**Vlastná doména môže viesť len na jedno z nich** — DNS záznam ukazuje na jeden cieľ. Tento návod ju smeruje na **Vercel**. GitHub Pages ostane bežať na svojej adrese ako záloha.
+Zdieľať sa dá ktorýkoľvek tvar — bez `www` sa návštevník presmeruje sám.
 
-V návode je `vasadomena.sk` len zástupný názov — nahraďte ho svojou doménou.
+### DNS záznamy vo WebGlobe
 
----
+Toto je presne to, čo je uložené v paneli WebGlobe. **Ak by sa niekedy stratili, sem sa vracajte** — hodnoty sú jedinečné pre tento Vercel projekt:
 
-## Časť 1 — Vercel: odtiaľ získate hodnoty
+| Typ | Názov | Hodnota | TTL |
+|---|---|---|---|
+| `A` | *prázdne* (koreňová doména) | `216.198.79.1` | 3600 |
+| `CNAME` | `www` | `8439ecdd50fa0c05.vercel-dns-017.com` | 3600 |
 
-1. Prihláste sa na **vercel.com** a otvorte projekt **modry-ocean**.
-2. Hore kliknite **Settings**, v ľavom stĺpci **Domains**.
-3. Tlačidlo **Add Domain**, napíšte `vasadomena.sk`, potvrďte.
-4. Vercel ponúkne pridať aj `www.vasadomena.sk` — **prijmite to.** Vyrieši tým presmerovanie medzi tvarom s `www` a bez neho.
-5. Vercel teraz zobrazí kartu s presnými hodnotami. **Opíšte si ich** — sú jedinečné pre tento projekt:
+Autoritatívne nameservery domény: `ns1.webglobe.sk`, `ns2.webglobe.sk`, `ns3.webglobe.com`. Záznamy sú podpísané DNSSEC.
 
-   - pre `vasadomena.sk` → typ **A** + IP adresa (býva `76.76.21.21`, pri novších projektoch `216.198.79.1`)
-   - pre `www.vasadomena.sk` → typ **CNAME** + cieľ v tvare `nieco.vercel-dns-0XX.com`
-
-> **Dôležité:** Vercel generuje tieto hodnoty pre každý projekt zvlášť. Ak sa to, čo vidíte na obrazovke, líši od príkladov v tomto návode, **platí to, čo ukazuje Vercel.**
+HTTPS certifikát vystavuje a obnovuje Vercel automaticky — netreba nič kupovať ani nahrávať.
 
 ---
 
-## Časť 2 — WebGlobe: tam ich zapíšete
+## Riešenie problémov
 
-1. Prihláste sa na **admin.webglobe.sk**.
-2. **Domény** → kliknite na svoju doménu → **DNS** → **DNS záznamy**.
-3. Zelené tlačidlo **Nový DNS záznam** a vyplňte prvý:
+### „Pridal som CNAME a on zmizol."
 
-   | pole | čo zadať |
-   |---|---|
-   | Typ | `A` |
-   | Názov | *nechať prázdne* — ide o koreňovú doménu. Ak panel pole vyžaduje, zadajte `@` |
-   | Hodnota | IP adresa opísaná z Vercelu |
-   | TTL | `3600` |
+**CNAME záznam nesmie na tom istom názve existovať spolu so žiadnym iným záznamom.** Je to pravidlo samotného DNS, nie obmedzenie WebGlobe. Ak je na `www` ešte A záznam (WebGlobe si ho pridáva sám a smeruje na ich parkovaciu stránku), panel CNAME buď odmietne, alebo ho ticho zahodí.
 
-4. Znovu **Nový DNS záznam**, druhý záznam:
+Riešenie: najprv zmazať **všetky** záznamy na názve `www`, až potom pridať CNAME.
 
-   | pole | čo zadať |
-   |---|---|
-   | Typ | `CNAME` |
-   | Názov | `www` |
-   | Hodnota | reťazec z Vercelu, napr. `d1d4fc829fe7bc7c.vercel-dns-017.com` |
-   | TTL | `3600` |
+### „Vercel mi už hodnotu CNAME neukazuje."
 
-5. **Skontrolujte, či tam už nejaké A alebo CNAME záznamy pre `@` a `www` nie sú.** WebGlobe ich pridáva automaticky a smerujú na ich parkovaciu stránku. Ak tam sú, upravte ich alebo zmažte — inak si budú so záznamami pre Vercel odporovať a doména bude fungovať náhodne.
+To nie je chyba a **netreba doménu mazať a pridávať nanovo.** Vercel zobrazuje požadované DNS záznamy len dovtedy, kým je doména v stave *Invalid Configuration*. Keď sa prepne na **Valid Configuration**, inštrukcie schová, lebo ich už netreba.
+
+Hodnoty sú vždy v tabuľke vyššie. Ak by ste ich chceli prečítať priamo zo živého DNS, opýtajte sa **autoritatívneho servera** — obíde tým akúkoľvek cache a ukáže presne to, čo je uložené v paneli WebGlobe:
+
+```
+nslookup -type=CNAME www.modryocean.sk ns1.webglobe.sk
+nslookup -type=A modryocean.sk ns3.webglobe.com
+```
+
+V PowerShelli to isté a čitateľnejšie:
+
+```powershell
+Resolve-DnsName www.modryocean.sk -Type CNAME -Server ns1.webglobe.sk -DnsOnly
+Resolve-DnsName modryocean.sk -Type A -Server ns3.webglobe.com -DnsOnly
+```
+
+### „Stále sa mi zobrazuje stará parkovacia stránka WebGlobe."
+
+Zaseknutá DNS cache na vašom počítači alebo u poskytovateľa internetu. Web funguje, len sa k vám ešte nedostala zmena.
+
+1. `ipconfig /flushdns` v príkazovom riadku (Windows).
+2. Ak to nepomôže, cachuje poskytovateľ internetu — stačí počkať do vypršania TTL, teda hodinu.
+3. Kontrola, ktorá cache obchádza: `nslookup modryocean.sk 8.8.8.8`. Musí vrátiť `216.198.79.1`. Ak áno, je všetko v poriadku a ide naozaj len o cache.
+
+Parkovaciu stránku WebGlobe spoznáte podľa toho, že ju obsluhuje `nginx` s `PHP` — Vercel posiela hlavičku `Server: Vercel`.
+
+### „Neviem, či to funguje."
+
+```powershell
+curl.exe -sS -I https://www.modryocean.sk/
+```
+
+Musí vrátiť `HTTP/1.1 200 OK` a `Server: Vercel`.
 
 ---
 
-## Časť 3 — Čakanie a kontrola
+## Ako sa to nastavovalo (referencia pri výmene domény)
 
-- Zmena sa prejaví **rádovo v hodinách**, úplná propagácia môže trvať až 24 hodín.
-- Vo Verceli na karte domény sa stav sám prepne na **Valid Configuration**.
-- **HTTPS certifikát vystaví Vercel automaticky** — netreba nič kupovať ani nahrávať.
-- Overenie z príkazového riadka:
+Postup nižšie je hotový a vykonaný. Zídeme sa k nemu, len ak by sa pridávala ďalšia doména.
 
-  ```
-  nslookup vasadomena.sk
-  nslookup www.vasadomena.sk
-  ```
+### Časť 1 — Vercel: odtiaľ sa získajú hodnoty
 
-  Prvý má vrátiť IP adresu od Vercelu, druhý má ukazovať na `vercel-dns` adresu.
+1. Prihlásiť sa na **vercel.com**, otvoriť projekt **modry-ocean**.
+2. Hore **Settings**, v ľavom stĺpci **Domains**.
+3. Tlačidlo **Add Domain**, zadať doménu, potvrdiť.
+4. Vercel ponúkne pridať aj `www.` verziu — **prijať.** Vyrieši tým presmerovanie medzi tvarom s `www` a bez neho.
+5. Vercel zobrazí kartu s presnými hodnotami. **Opísať si ich** — sú jedinečné pre projekt:
+   - pre koreňovú doménu → typ **A** + IP adresa
+   - pre `www.` → typ **CNAME** + cieľ v tvare `nieco.vercel-dns-0XX.com`
+
+> **Dôležité:** Vercel generuje tieto hodnoty pre každý projekt zvlášť. Univerzálne tabuľky z internetu (`76.76.21.21`, `cname.vercel-dns.com`) nemusia platiť. **Platí to, čo ukazuje Vercel.**
+
+### Časť 2 — WebGlobe: tam sa zapíšu
+
+1. Prihlásiť sa na **admin.webglobe.sk**.
+2. **Domény** → kliknúť na doménu → **DNS** → **DNS záznamy**.
+3. Zelené tlačidlo **Nový DNS záznam**, pridať A záznam: *Typ* `A`, *Názov* nechať prázdne (ak panel pole vyžaduje, zadať `@`), *Hodnota* IP z Vercelu, *TTL* `3600`.
+4. Znovu **Nový DNS záznam**, pridať CNAME: *Typ* `CNAME`, *Názov* `www`, *Hodnota* reťazec z Vercelu, *TTL* `3600`.
+5. **Najprv skontrolovať, či na `@` a `www` už nejaké záznamy nie sú** a zmazať ich — inak si budú s Vercelom odporovať a CNAME sa nedá pridať (viď Riešenie problémov).
+
+### Časť 3 — Čakanie
+
+Zmena sa prejaví rádovo v hodinách, úplná propagácia môže trvať do 24 hodín. Vo Verceli sa stav domény sám prepne na **Valid Configuration**.
 
 ---
 
 ## Poznámky
 
-**Zdieľanie odkazu.** Dlhé adresy, ktoré ponúka Vercel dashboard (`modry-ocean-9f1upgrtv-roman-fa5e.vercel.app`), sú za prihlásením — návštevníkovi ukážu stránku „Login – Vercel", nie web. Zdieľajte `modry-ocean.vercel.app`, neskôr vlastnú doménu. Nastavuje sa to vo Vercel → Settings → Deployment Protection.
+**Zdieľanie odkazu.** Dlhé adresy, ktoré ponúka Vercel dashboard (`modry-ocean-9f1upgrtv-roman-fa5e.vercel.app`), sú za prihlásením a návštevníkovi ukážu stránku „Login – Vercel", nie web. Zdieľajte `www.modryocean.sk`. Nastavuje sa to vo Vercel → Settings → Deployment Protection.
 
-**Po nasadení domény** má zmysel doplniť do `index.html` absolútnu adresu v `og:image` a pridať `og:url`, aby náhľad pri zdieľaní na Facebooku fungoval spoľahlivo. Teraz je `og:image` relatívna cesta.
+**Prečo A + CNAME a nie Vercel nameservery.** Správa DNS ostáva na WebGlobe. Keby si združenie neskôr zriadilo e-mailové schránky na doméne, MX záznamy sa nastavia v tom istom paneli. Pri prechode na Vercel nameservery by sa celá správa DNS presunula do Vercelu.
 
-**Keby ste doménu chceli radšej na GitHub Pages**, záznamy by sa museli prepísať na GitHub a vo Verceli doménu odobrať. Nedá sa to naraz na oboch.
+**Náhľad pri zdieľaní.** `index.html` má `og:url` aj `og:image` zapísané absolútne na `https://www.modryocean.sk/`. Pri zmene domény treba tie dve značky v hlavičke prepísať, inak náhľad na Facebooku prestane ukazovať obrázok.
 
 ---
 

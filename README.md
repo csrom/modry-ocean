@@ -42,14 +42,17 @@ Ak sa video nenačíta, zobrazí sa záložná fotka `obrazky/bezci-noc.jpg` a s
 
 | kde | adresa |
 |---|---|
+| **ostrá doména** | **https://www.modryocean.sk** |
 | Vercel | https://modry-ocean.vercel.app |
 | GitHub Pages | https://csrom.github.io/modry-ocean/ |
 
-Obe sa nasadzujú samy pri každom pushi do vetvy `main`.
+Adresa bez `www` (`modryocean.sk`) sa presmeruje na tvar s `www`, takže zdieľať sa dá ktorákoľvek.
+
+Vercel aj GitHub Pages sa nasadzujú samy pri každom pushi do vetvy `main`.
 
 ## Doména
 
-Postup, ako nasmerovať vlastnú doménu z WebGlobe na Vercel, je v [DOMENA.md](DOMENA.md).
+Doména je zaregistrovaná na WebGlobe a nasmerovaná na Vercel. Nastavené DNS záznamy, riešenie problémov aj postup pri výmene domény sú v [DOMENA.md](DOMENA.md).
 
 ## Kontakt
 
